@@ -355,7 +355,7 @@
       align-items: center;
       justify-content: center;
       gap: 0.3rem;
-      padding: 0.4rem 0.8rem;
+      padding: 0.5rem 0.8rem;
       border-radius: 50px;
       border: none;
       font-size: 0.8rem;
@@ -378,7 +378,7 @@
     .share-btn.twitter { background: #000000; }
     .share-btn.facebook { background: #1877F2; }
     .share-btn.linkedin { background: #0A66C2; }
-    .share-btn i { font-size: 0.9rem; }
+    .share-btn i { font-size: 1rem; }
     .share-btn span {
       display: none;
     }
@@ -445,7 +445,7 @@
       .big-picture-frame { width: 140px; height: 140px; }
       .grad-name-big { font-size: 1.4rem; }
       .main-header h1 { font-size: 1.4rem; }
-      .share-btn { min-width: 40px; padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+      .share-btn { min-width: 40px; padding: 0.4rem 0.5rem; font-size: 0.7rem; }
       .share-btn i { font-size: 0.8rem; }
     }
 
@@ -777,14 +777,12 @@
     // ----- Picture handling -----
     let savedPictureData = null;
 
-    // Save picture when file is selected
     pictureInput.addEventListener('change', function() {
       const file = this.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
           savedPictureData = e.target.result;
-          // Also update the big picture if we're on page 2
           if (page2.classList.contains('active')) {
             bigProfileImage.src = savedPictureData;
             bigProfileImage.style.display = 'block';
@@ -797,7 +795,7 @@
       }
     });
 
-    // ----- Share -----
+    // ----- SHARE FUNCTIONS (WORKING) -----
     function getShareText() {
       const name = fullNameInput.value.trim() || 'Graduate';
       const major = majorInput.value.trim() || 'your field';
@@ -810,7 +808,6 @@
       const params = new URLSearchParams();
       params.set('view', 'true');
       
-      // Add name, major, university to URL
       const name = fullNameInput.value.trim() || 'Graduate';
       const major = majorInput.value.trim() || 'Your Major';
       const uni = universityInput.value.trim() || 'Your University';
@@ -819,21 +816,17 @@
       params.set('major', major);
       params.set('uni', uni);
       
-      // Add picture if available
       if (savedPictureData) {
-        // Compress the picture data to fit in URL (shorten it)
-        let picData = savedPictureData;
-        // If the picture is too long, use a shorter version or skip
-        if (picData.length > 2000) {
-          // Try to use a smaller version or just skip
-          // For now, we'll include it but it might be long
+        // Only include if not too long
+        if (savedPictureData.length < 3000) {
+          params.set('pic', savedPictureData);
         }
-        params.set('pic', picData);
       }
       
       return baseUrl + '?' + params.toString();
     }
 
+    // Global share function - accessible from HTML onclick
     window.shareVia = function(platform) {
       const text = getShareText();
       const url = getShareUrl();
@@ -841,7 +834,7 @@
 
       switch(platform) {
         case 'email':
-          shareUrl = `mailto:?subject=🎓 I Graduated!&body=${encodeURIComponent(text + '\n\n' + url)}`;
+          shareUrl = `mailto:?subject=🎓 I Graduated!&body=${encodeURIComponent(text + '\n\nView my celebration: ' + url)}`;
           break;
         case 'whatsapp':
           shareUrl = `https://wa.me/?text=${encodeURIComponent(text + '\n\n' + url)}`;
@@ -856,38 +849,62 @@
           shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
           break;
         default:
+          showToast('Share not available for this platform');
           return;
       }
 
       if (shareUrl) {
+        // Open in new window
         window.open(shareUrl, '_blank', 'width=600,height=500,scrollbars=yes');
       }
     };
 
-    // ----- Copy Share Link -----
+    // Copy share link
     window.copyShareLink = function() {
       const url = getShareUrl();
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => {
-          showToast('Link copied! Share with friends 🎉');
+      
+      // Try using the Web Share API first (works on mobile)
+      if (navigator.share) {
+        navigator.share({
+          title: '🎓 My Graduation Celebration!',
+          text: getShareText(),
+          url: url
         }).catch(() => {
-          copyLinkFallback(url);
+          // If user cancels, fallback to copy
+          copyToClipboard(url);
         });
-      } else {
-        copyLinkFallback(url);
+        return;
       }
+      
+      // Fallback: copy to clipboard
+      copyToClipboard(url);
     };
 
-    function copyLinkFallback(text) {
+    function copyToClipboard(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Link copied! Share with friends 🎉');
+        }).catch(() => {
+          fallbackCopy(text);
+        });
+      } else {
+        fallbackCopy(text);
+      }
+    }
+
+    function fallbackCopy(text) {
       const textArea = document.createElement('textarea');
       textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '-9999px';
       document.body.appendChild(textArea);
       textArea.select();
       try {
         document.execCommand('copy');
         showToast('Link copied! Share with friends 🎉');
       } catch (err) {
-        showToast('Copy failed. Please copy the URL manually.');
+        showToast('Please copy the URL manually');
       }
       document.body.removeChild(textArea);
     }
@@ -898,7 +915,7 @@
       toast.classList.add('show');
       setTimeout(() => {
         toast.classList.remove('show');
-      }, 2500);
+      }, 3000);
     }
 
     // ----- update congrats -----
@@ -925,7 +942,6 @@
       if (major === '') major = 'Your Major';
       bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
 
-      // Use saved picture data if available
       if (savedPictureData) {
         bigProfileImage.src = savedPictureData;
         bigProfileImage.style.display = 'block';
@@ -950,21 +966,17 @@
     function checkViewOnlyMode() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('view') === 'true') {
-        // Enable view-only mode
         mainCard.classList.add('view-only');
         
-        // Get data from URL
         const name = params.get('name') || 'Graduate';
         const major = params.get('major') || 'Your Major';
         const uni = params.get('uni') || 'Your University';
         const picData = params.get('pic');
         
-        // Set the values in the form (for internal use)
         fullNameInput.value = name;
         majorInput.value = major;
         universityInput.value = uni;
         
-        // Update the display
         if (name) {
           const parts = name.split(' ');
           const firstName = parts[0] || 'Graduate';
@@ -979,7 +991,6 @@
         bigDisplayUniversity.innerHTML = `<i class="fas fa-university"></i> ${uni}`;
         bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
         
-        // Show picture if available
         if (picData && picData.startsWith('data:image')) {
           bigProfileImage.src = picData;
           bigProfileImage.style.display = 'block';

@@ -440,6 +440,28 @@
       display: none;
     }
 
+    /* Upload progress */
+    .upload-progress {
+      display: none;
+      text-align: center;
+      padding: 0.3rem;
+      background: rgba(118, 75, 162, 0.1);
+      border-radius: 30px;
+      margin-top: 0.3rem;
+      font-size: 0.8rem;
+      color: #5a3a7e;
+    }
+    .upload-progress .spinner {
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+    .upload-progress.show {
+      display: block;
+    }
+
     @media (max-width: 380px) {
       .card { padding: 1rem 0.8rem; }
       .big-picture-frame { width: 140px; height: 140px; }
@@ -538,6 +560,9 @@
           <div class="input-group file-input">
             <label for="picture"><i class="fas fa-camera"></i> Your picture (optional)</label>
             <input type="file" id="picture" accept="image/*">
+            <div class="upload-progress" id="uploadProgress">
+              <span class="spinner">⏳</span> Uploading picture...
+            </div>
           </div>
           <button type="button" class="btn-primary" id="goToCongratsBtn">
             <i class="fas fa-champagne-glasses"></i> Celebrate! 🎉
@@ -657,6 +682,7 @@
 
     const headerTitle = document.getElementById('headerTitle');
     const subheadText = document.getElementById('subheadText');
+    const uploadProgress = document.getElementById('uploadProgress');
 
     // ----- CANVAS FLOWERS -----
     const canvas = document.getElementById('flowerCanvas');
@@ -779,60 +805,70 @@
       if (this.value.trim() !== '') universityGroup.classList.remove('error');
     });
 
-    // ----- Picture handling with LocalStorage -----
-    let savedPictureData = null;
-    let shareKey = null;
+    // ----- PICTURE UPLOAD TO IMGBB (Free Image Hosting) -----
+    let uploadedImageUrl = null;
+    let isUploading = false;
 
-    // Generate a unique share key
-    function generateShareKey() {
-      return 'grad_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    async function uploadToImgBB(imageData) {
+      return new Promise((resolve, reject) => {
+        // Show progress
+        uploadProgress.classList.add('show');
+        isUploading = true;
+        
+        // Use a free CORS proxy for imgbb
+        const apiKey = '6d207e02198a847aa64d5a8b1d47b7f5'; // Free imgbb API key (public)
+        const formData = new FormData();
+        formData.append('key', apiKey);
+        formData.append('image', imageData);
+        
+        fetch('https://api.imgbb.com/1/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          uploadProgress.classList.remove('show');
+          isUploading = false;
+          if (data.success) {
+            resolve(data.data.url);
+          } else {
+            reject(new Error('Upload failed: ' + (data.error?.message || 'Unknown error')));
+          }
+        })
+        .catch(error => {
+          uploadProgress.classList.remove('show');
+          isUploading = false;
+          reject(error);
+        });
+      });
     }
 
-    // Save picture to localStorage
-    function savePictureToStorage(pictureData) {
-      if (!pictureData) return null;
-      const key = generateShareKey();
-      try {
-        localStorage.setItem(key, pictureData);
-        return key;
-      } catch (e) {
-        console.warn('Could not save picture to localStorage:', e);
-        return null;
-      }
-    }
-
-    // Load picture from localStorage
-    function loadPictureFromStorage(key) {
-      if (!key) return null;
-      try {
-        return localStorage.getItem(key);
-      } catch (e) {
-        console.warn('Could not load picture from localStorage:', e);
-        return null;
-      }
-    }
-
-    pictureInput.addEventListener('change', function() {
+    // Upload picture when selected
+    pictureInput.addEventListener('change', async function() {
       const file = this.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          savedPictureData = e.target.result;
-          // Save to localStorage with a key
-          const key = savePictureToStorage(savedPictureData);
-          if (key) {
-            shareKey = key;
-          }
-          if (page2.classList.contains('active')) {
-            bigProfileImage.src = savedPictureData;
-            bigProfileImage.style.display = 'block';
-            bigPlaceholder.style.display = 'none';
-          }
-        };
-        reader.readAsDataURL(file);
+        try {
+          const reader = new FileReader();
+          reader.onload = async function(e) {
+            const imageData = e.target.result.split(',')[1]; // Get base64 data
+            try {
+              const url = await uploadToImgBB(imageData);
+              uploadedImageUrl = url;
+              showToast('✅ Picture uploaded successfully!');
+            } catch (error) {
+              console.error('Upload error:', error);
+              showToast('⚠️ Upload failed. Using local picture.');
+              // Fallback: use local data URL
+              uploadedImageUrl = e.target.result;
+            }
+          };
+          reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('Error reading file:', error);
+          showToast('⚠️ Error reading file');
+        }
       } else {
-        savedPictureData = null;
-        shareKey = null;
+        uploadedImageUrl = null;
       }
     });
 
@@ -857,12 +893,17 @@
       params.set('major', major);
       params.set('uni', uni);
       
-      // If we have a share key, use it
-      if (shareKey) {
-        params.set('picKey', shareKey);
-      } else if (savedPictureData && savedPictureData.length < 2000) {
-        // Only include directly if small enough
-        params.set('pic', savedPictureData);
+      // Use uploaded image URL if available, otherwise use local data
+      if (uploadedImageUrl) {
+        // If it's a full URL, just pass it
+        if (uploadedImageUrl.startsWith('http')) {
+          params.set('picUrl', uploadedImageUrl);
+        } else {
+          // Only include local data if small enough
+          if (uploadedImageUrl.length < 2000) {
+            params.set('pic', uploadedImageUrl);
+          }
+        }
       }
       
       return baseUrl + '?' + params.toString();
@@ -880,7 +921,6 @@
           url: url
         }).catch(() => {});
       } else {
-        // Fallback: copy link
         copyToClipboard(url);
         showToast('Link copied! Share with friends 🎉');
       }
@@ -986,8 +1026,9 @@
       if (major === '') major = 'Your Major';
       bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
 
-      if (savedPictureData) {
-        bigProfileImage.src = savedPictureData;
+      // Show picture - use uploaded URL if available
+      if (uploadedImageUrl) {
+        bigProfileImage.src = uploadedImageUrl;
         bigProfileImage.style.display = 'block';
         bigPlaceholder.style.display = 'none';
       } else {
@@ -1016,7 +1057,7 @@
         const major = params.get('major') || 'Your Major';
         const uni = params.get('uni') || 'Your University';
         const picData = params.get('pic');
-        const picKey = params.get('picKey');
+        const picUrl = params.get('picUrl');
         
         fullNameInput.value = name;
         majorInput.value = major;
@@ -1037,31 +1078,23 @@
         bigDisplayUniversity.innerHTML = `<i class="fas fa-university"></i> ${uni}`;
         bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
         
-        // Try to load picture
+        // Try to load picture - first try URL, then local data
         let pictureLoaded = false;
         
-        // First try loading from localStorage using key
-        if (picKey) {
-          const storedPicture = loadPictureFromStorage(picKey);
-          if (storedPicture && storedPicture.startsWith('data:image')) {
-            bigProfileImage.src = storedPicture;
-            bigProfileImage.style.display = 'block';
-            bigPlaceholder.style.display = 'none';
-            savedPictureData = storedPicture;
-            pictureLoaded = true;
-          }
-        }
-        
-        // If not loaded and pic data is in URL
-        if (!pictureLoaded && picData && picData.startsWith('data:image')) {
+        if (picUrl && picUrl.startsWith('http')) {
+          bigProfileImage.src = picUrl;
+          bigProfileImage.style.display = 'block';
+          bigPlaceholder.style.display = 'none';
+          pictureLoaded = true;
+          uploadedImageUrl = picUrl;
+        } else if (picData && picData.startsWith('data:image')) {
           bigProfileImage.src = picData;
           bigProfileImage.style.display = 'block';
           bigPlaceholder.style.display = 'none';
-          savedPictureData = picData;
           pictureLoaded = true;
+          uploadedImageUrl = picData;
         }
         
-        // If still not loaded, show placeholder
         if (!pictureLoaded) {
           bigProfileImage.style.display = 'none';
           bigPlaceholder.style.display = 'block';

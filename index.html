@@ -1,4 +1,8 @@
- />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
   <title>🎓 Grad Celebration</title>
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
@@ -8,6 +12,7 @@
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -16,21 +21,22 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 1.5rem;
+      padding: 0.8rem;
+      margin: 0;
     }
 
     .card {
-      max-width: 1000px;
+      max-width: 480px;
       width: 100%;
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      border-radius: 3rem;
-      padding: 2.5rem 2.8rem;
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3), 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-radius: 2rem;
+      padding: 1.5rem 1.2rem;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(255, 255, 255, 0.3);
       position: relative;
-      min-height: 600px;
+      min-height: 550px;
       overflow: hidden;
     }
 
@@ -42,81 +48,77 @@
       display: block;
     }
     @keyframes fadeSlide {
-      0% { opacity: 0.3; transform: translateY(12px); }
+      0% { opacity: 0.3; transform: translateY(10px); }
       100% { opacity: 1; transform: translateY(0); }
     }
 
     .main-header {
       display: flex;
       align-items: center;
-      gap: 0.8rem;
-      margin-bottom: 0.2rem;
+      gap: 0.5rem;
+      margin-bottom: 0.1rem;
     }
     .main-header h1 {
-      font-size: 2.6rem;
+      font-size: 1.8rem;
       font-weight: 700;
       color: #1a1a2e;
       letter-spacing: -0.5px;
     }
-    .main-header h1 i {
-      color: #f7971e;
-    }
     .main-header i {
       color: #f7971e;
-      font-size: 2.5rem;
+      font-size: 1.8rem;
     }
     .subhead {
-      font-size: 1.05rem;
+      font-size: 0.9rem;
       color: #2d2d44;
-      margin-bottom: 2rem;
-      border-left: 5px solid #f7971e;
-      padding-left: 1.2rem;
-      background: rgba(247, 151, 30, 0.08);
-      border-radius: 0 12px 12px 0;
-      line-height: 1.5;
+      margin-bottom: 1.2rem;
+      border-left: 4px solid #f7971e;
+      padding-left: 0.8rem;
+      background: rgba(247, 151, 30, 0.06);
+      border-radius: 0 8px 8px 0;
+      line-height: 1.4;
     }
 
     /* FORM PAGE */
     .form-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin-top: 0.5rem;
+      grid-template-columns: 1fr;
+      gap: 1.2rem;
     }
     .form-section {
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(5px);
-      padding: 1.8rem 1.8rem 2.2rem;
-      border-radius: 2rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      padding: 1.2rem 1.2rem 1.5rem;
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.5);
     }
     .form-section h2 {
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: #1a1a2e;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
     }
     .form-section h2 i { color: #764ba2; }
     .input-group {
-      margin-bottom: 1.4rem;
+      margin-bottom: 1rem;
     }
     .input-group label {
       display: block;
       font-weight: 600;
       color: #2d2d44;
-      margin-bottom: 0.3rem;
-      font-size: 0.95rem;
+      margin-bottom: 0.2rem;
+      font-size: 0.85rem;
     }
     .input-group input {
       width: 100%;
-      padding: 0.8rem 1.2rem;
+      padding: 0.7rem 1rem;
       border: 2px solid rgba(118, 75, 162, 0.15);
       border-radius: 50px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       background: rgba(255, 255, 255, 0.8);
       transition: 0.2s;
       outline: none;
@@ -124,12 +126,13 @@
     .input-group input:focus {
       border-color: #764ba2;
       background: white;
-      box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.12);
+      box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
     }
     .input-group input::placeholder {
       color: #9999b0;
       font-weight: 400;
       font-style: italic;
+      font-size: 0.9rem;
     }
     .input-group.error input {
       border-color: #e74c3c;
@@ -139,9 +142,9 @@
     .input-group .error-message {
       display: none;
       color: #e74c3c;
-      font-size: 0.8rem;
-      margin-top: 0.3rem;
-      padding-left: 1.2rem;
+      font-size: 0.75rem;
+      margin-top: 0.2rem;
+      padding-left: 1rem;
     }
     .input-group.error .error-message {
       display: block;
@@ -150,7 +153,7 @@
     .file-input {
       background: rgba(255, 255, 255, 0.6);
       border-radius: 50px;
-      padding: 0.4rem 1rem;
+      padding: 0.3rem 0.8rem;
       border: 2px dashed rgba(118, 75, 162, 0.2);
       transition: 0.2s;
       cursor: pointer;
@@ -161,22 +164,23 @@
     }
     .file-input input[type="file"] {
       border: none;
-      padding: 0.3rem 0;
+      padding: 0.2rem 0;
       background: transparent;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       width: 100%;
     }
     .file-input input[type="file"]::file-selector-button {
       border: none;
       background: #764ba2;
       color: white;
-      padding: 0.4rem 1.2rem;
+      padding: 0.3rem 1rem;
       border-radius: 40px;
       font-weight: 600;
-      margin-right: 1rem;
+      margin-right: 0.6rem;
       cursor: pointer;
       transition: 0.2s;
       border: 1px solid #5a3a7e;
+      font-size: 0.8rem;
     }
     .file-input input[type="file"]::file-selector-button:hover {
       background: #5a3a7e;
@@ -184,32 +188,26 @@
     }
     .btn-primary {
       width: 100%;
-      padding: 0.9rem;
+      padding: 0.8rem;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border: none;
       border-radius: 60px;
       color: white;
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.8rem;
+      gap: 0.6rem;
       cursor: pointer;
       transition: 0.2s;
-      margin-top: 0.8rem;
+      margin-top: 0.5rem;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 16px rgba(118, 75, 162, 0.3);
+      box-shadow: 0 6px 16px rgba(118, 75, 162, 0.3);
+      -webkit-tap-highlight-color: transparent;
     }
-    .btn-primary:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 12px 28px rgba(118, 75, 162, 0.4);
-    }
-    .btn-primary:active { transform: scale(0.97); }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
+    .btn-primary:active {
+      transform: scale(0.97);
     }
     .btn-secondary {
       background: rgba(255, 255, 255, 0.7);
@@ -217,11 +215,21 @@
       border: 2px solid rgba(118, 75, 162, 0.2);
       box-shadow: none;
     }
-    .btn-secondary:hover {
+    .btn-secondary:active {
       background: rgba(255, 255, 255, 0.9);
-      border-color: #764ba2;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .required-note {
+      margin-top: 0.6rem;
+      font-size: 0.75rem;
+      color: #5a3a7e;
+      text-align: center;
+      background: rgba(118, 75, 162, 0.06);
+      border-radius: 30px;
+      padding: 0.2rem;
+    }
+    .preview-hint {
+      display: none;
     }
 
     /* CONGRATS PAGE */
@@ -230,7 +238,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 0.5rem 0 1rem;
+      padding: 0.2rem 0 0.5rem;
       position: relative;
       z-index: 2;
     }
@@ -239,22 +247,23 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.3rem;
     }
 
     .big-picture-frame {
-      width: 340px;
-      height: 340px;
+      width: 180px;
+      height: 180px;
       border-radius: 50%;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      border: 6px solid white;
-      box-shadow: 0 16px 40px rgba(118, 75, 162, 0.3);
+      border: 4px solid white;
+      box-shadow: 0 12px 30px rgba(118, 75, 162, 0.3);
       transition: 0.3s;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.4rem;
+      flex-shrink: 0;
     }
     .big-picture-frame img {
       width: 100%;
@@ -263,17 +272,18 @@
       display: block;
     }
     .big-picture-frame .placeholder-icon {
-      font-size: 6rem;
+      font-size: 3.5rem;
       color: rgba(255, 255, 255, 0.7);
       opacity: 0.7;
     }
 
     .grad-name-big {
-      font-size: 2.8rem;
+      font-size: 1.8rem;
       font-weight: 700;
       color: #1a1a2e;
       line-height: 1.2;
       text-align: center;
+      margin-bottom: 0.2rem;
     }
     .grad-name-big span {
       color: #f7971e;
@@ -283,13 +293,13 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.8rem 1.8rem;
-      margin: 0.6rem 0 0.8rem;
+      gap: 0.4rem 0.8rem;
+      margin: 0.2rem 0 0.3rem;
     }
     .grad-details .detail-item {
-      font-size: 1.15rem;
+      font-size: 0.9rem;
       background: rgba(118, 75, 162, 0.08);
-      padding: 0.3rem 1.4rem;
+      padding: 0.2rem 1rem;
       border-radius: 40px;
       color: #2d2d44;
       font-weight: 500;
@@ -297,88 +307,96 @@
       border: 1px solid rgba(118, 75, 162, 0.06);
     }
     .grad-details .detail-item i {
-      margin-right: 6px;
+      margin-right: 4px;
       color: #764ba2;
     }
 
     .celebration-message-big {
-      font-size: 1.3rem;
+      font-size: 1rem;
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(4px);
-      padding: 0.7rem 2rem;
+      padding: 0.4rem 1.2rem;
       border-radius: 60px;
       color: #1a1a2e;
       font-weight: 500;
-      border-left: 5px solid #f7971e;
-      margin: 0.4rem 0 0.8rem;
+      border-left: 4px solid #f7971e;
+      margin: 0.2rem 0 0.4rem;
       text-align: center;
       border: 1px solid rgba(255, 255, 255, 0.3);
+      width: 100%;
     }
     .celebration-message-big i {
       color: #f7971e;
-      margin: 0 6px;
+      margin: 0 4px;
     }
 
-    /* SHARE BUTTONS */
+    /* SHARE SECTION - Mobile Optimized */
     .share-section {
-      margin-top: 0.8rem;
+      margin-top: 0.4rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 100%;
     }
     .share-section p {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       color: #2d2d44;
       font-weight: 600;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.4rem;
       text-align: center;
     }
     .share-buttons {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 0.6rem;
+      gap: 0.4rem;
     }
     .share-btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.2rem;
+      gap: 0.3rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 50px;
       border: none;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
-      transition: 0.2s;
+      transition: 0.15s;
       color: white;
       text-decoration: none;
-      min-width: 80px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-width: 50px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      -webkit-tap-highlight-color: transparent;
+      flex: 1 0 auto;
+      max-width: 60px;
     }
-    .share-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    .share-btn:active {
+      transform: scale(0.92);
     }
-    .share-btn:active { transform: scale(0.95); }
     .share-btn.email { background: #D44638; }
     .share-btn.whatsapp { background: #25D366; }
     .share-btn.twitter { background: #000000; }
     .share-btn.facebook { background: #1877F2; }
     .share-btn.linkedin { background: #0A66C2; }
-    .share-btn i { font-size: 1.1rem; }
+    .share-btn i { font-size: 0.9rem; }
+    .share-btn span {
+      display: none;
+    }
 
     .action-row {
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
       justify-content: center;
-      margin-top: 0.6rem;
+      margin-top: 0.4rem;
+      width: 100%;
     }
     .action-row .btn-primary {
       width: auto;
-      padding: 0.6rem 2rem;
-      font-size: 1rem;
+      padding: 0.4rem 1.2rem;
+      font-size: 0.85rem;
       margin-top: 0;
+      flex: 1;
+      min-width: 80px;
     }
 
     #flowerCanvas {
@@ -389,36 +407,44 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
-      border-radius: 3rem;
+      border-radius: 2rem;
       display: block;
     }
 
     .footnote {
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
-      color: rgba(45, 45, 68, 0.6);
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: rgba(45, 45, 68, 0.5);
       text-align: center;
-      border-top: 1px solid rgba(118, 75, 162, 0.1);
-      padding-top: 1rem;
+      border-top: 1px solid rgba(118, 75, 162, 0.08);
+      padding-top: 0.6rem;
       position: relative;
       z-index: 2;
     }
 
-    @media (max-width: 780px) {
-      .card { padding: 1.8rem; border-radius: 2rem; }
-      .form-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-      .main-header h1 { font-size: 2rem; }
+    /* Hide the second column on mobile */
+    .form-grid .preview-hint {
+      display: none;
+    }
+
+    /* Fix for very small screens */
+    @media (max-width: 380px) {
+      .card { padding: 1rem 0.8rem; }
+      .big-picture-frame { width: 140px; height: 140px; }
+      .grad-name-big { font-size: 1.4rem; }
+      .main-header h1 { font-size: 1.4rem; }
+      .share-btn { min-width: 40px; padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+      .share-btn i { font-size: 0.8rem; }
+    }
+
+    @media (min-width: 481px) {
+      .card { max-width: 600px; padding: 2rem; }
       .big-picture-frame { width: 250px; height: 250px; }
       .grad-name-big { font-size: 2.2rem; }
-      .share-btn { padding: 0.5rem 1rem; font-size: 0.85rem; min-width: 60px; }
-    }
-    @media (max-width: 480px) {
-      .card { padding: 1.2rem; }
-      .big-picture-frame { width: 200px; height: 200px; }
-      .grad-name-big { font-size: 1.8rem; }
-      .celebration-message-big { font-size: 1rem; }
-      .share-buttons { gap: 0.4rem; }
-      .share-btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; min-width: 50px; }
+      .share-btn { min-width: 70px; padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+      .share-btn span { display: inline; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .preview-hint { display: flex !important; }
     }
   </style>
 </head>
@@ -432,8 +458,8 @@
     <h1 id="headerTitle">Graduate University</h1>
   </div>
   <div class="subhead" id="subheadText">
-    <i class="fas fa-celebration" style="color: #f7971e; margin-right: 8px;"></i>
-    I am a recent university graduate, having completed my degree, and I am eager to begin my professional journey.
+    <i class="fas fa-celebration" style="color: #f7971e; margin-right: 6px;"></i>
+    Fill your details, then celebrate!
   </div>
 
   <!-- PAGE 1: FORM -->
@@ -444,35 +470,35 @@
         <form id="gradForm" novalidate>
           <div class="input-group" id="nameGroup">
             <label for="fullName"><i class="fas fa-user"></i> Full name <span style="color: #e74c3c;">*</span></label>
-            <input type="text" id="fullName" placeholder="Enter your full name" value="" required>
+            <input type="text" id="fullName" placeholder="Enter your full name" value="">
             <div class="error-message">Please enter your full name</div>
           </div>
           <div class="input-group" id="majorGroup">
-            <label for="major"><i class="fas fa-book-open"></i> Major / Field <span style="color: #e74c3c;">*</span></label>
-            <input type="text" id="major" placeholder="Enter your major" value="" required>
+            <label for="major"><i class="fas fa-book-open"></i> Major <span style="color: #e74c3c;">*</span></label>
+            <input type="text" id="major" placeholder="Enter your major" value="">
             <div class="error-message">Please enter your major</div>
           </div>
           <div class="input-group" id="universityGroup">
             <label for="university"><i class="fas fa-university"></i> University <span style="color: #e74c3c;">*</span></label>
-            <input type="text" id="university" placeholder="Enter your university" value="" required>
+            <input type="text" id="university" placeholder="Enter your university" value="">
             <div class="error-message">Please enter your university</div>
           </div>
           <div class="input-group file-input">
-            <label for="picture"><i class="fas fa-camera"></i> Your picture </label>
+            <label for="picture"><i class="fas fa-camera"></i> Your picture (optional)</label>
             <input type="file" id="picture" accept="image/*">
           </div>
           <button type="button" class="btn-primary" id="goToCongratsBtn">
-            <i class="fas fa-champagne-glasses"></i> Show my congrats 🎉
+            <i class="fas fa-champagne-glasses"></i> Celebrate! 🎉
           </button>
         </form>
-        <div style="margin-top: 0.8rem; font-size: 0.85rem; color: #5a3a7e; text-align: center; background: rgba(118, 75, 162, 0.06); border-radius: 30px; padding: 0.3rem;">
-          <i class="fas fa-asterisk" style="color: #e74c3c;"></i> All fields marked with * are required
+        <div class="required-note">
+          <i class="fas fa-asterisk" style="color: #e74c3c; font-size: 0.6rem;"></i> Required fields
         </div>
       </div>
-      <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.3); backdrop-filter: blur(4px); border-radius: 2rem; padding: 1.5rem; text-align: center; border: 2px dashed rgba(118, 75, 162, 0.2);">
-        <i class="fas fa-arrow-right fa-3x" style="color: #764ba2; opacity: 0.5; margin-bottom: 1rem;"></i>
-        <p style="color: #2d2d44; font-weight: 500;">Your congrats page<br> with flowers 🌸</p>
-        <i class="fas fa-graduation-cap" style="font-size: 3rem; color: #f7971e; opacity: 0.4; margin-top: 0.5rem;"></i>
+      <div class="preview-hint" style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(255,255,255,0.3); backdrop-filter: blur(4px); border-radius: 1.5rem; padding: 1rem; text-align: center; border: 2px dashed rgba(118, 75, 162, 0.2);">
+        <i class="fas fa-arrow-right fa-2x" style="color: #764ba2; opacity: 0.4; margin-bottom: 0.5rem;"></i>
+        <p style="color: #2d2d44; font-weight: 500; font-size: 0.9rem;">Your congrats page<br> with fast flowers 🌸</p>
+        <i class="fas fa-graduation-cap" style="font-size: 2.5rem; color: #f7971e; opacity: 0.3; margin-top: 0.3rem;"></i>
       </div>
     </div>
   </div>
@@ -500,47 +526,47 @@
       </div>
 
       <div class="celebration-message-big" id="bigCelebrationMsg">
-        <i class="fas fa-trophy"></i>  Congratulations, grad!  <i class="fas fa-rocket"></i>
+        <i class="fas fa-trophy"></i>  Congratulations!  <i class="fas fa-rocket"></i>
       </div>
 
-      <!-- SHARE SECTION -->
+      <!-- SHARE SECTION - Mobile Optimized -->
       <div class="share-section">
-        <p><i class="fas fa-share-alt" style="color: #764ba2;"></i> Share your celebration with friends!</p>
+        <p><i class="fas fa-share-alt" style="color: #764ba2;"></i> Share with friends</p>
         <div class="share-buttons">
           <button class="share-btn email" onclick="shareVia('email')">
-            <i class="fas fa-envelope"></i> Email
+            <i class="fas fa-envelope"></i><span> Email</span>
           </button>
           <button class="share-btn whatsapp" onclick="shareVia('whatsapp')">
-            <i class="fab fa-whatsapp"></i> WhatsApp
+            <i class="fab fa-whatsapp"></i><span> WhatsApp</span>
           </button>
           <button class="share-btn twitter" onclick="shareVia('twitter')">
-            <i class="fab fa-twitter"></i> Twitter
+            <i class="fab fa-twitter"></i><span> Twitter</span>
           </button>
           <button class="share-btn facebook" onclick="shareVia('facebook')">
-            <i class="fab fa-facebook-f"></i> Facebook
+            <i class="fab fa-facebook-f"></i><span> Facebook</span>
           </button>
           <button class="share-btn linkedin" onclick="shareVia('linkedin')">
-            <i class="fab fa-linkedin-in"></i> LinkedIn
+            <i class="fab fa-linkedin-in"></i><span> LinkedIn</span>
           </button>
         </div>
       </div>
 
       <div class="action-row">
         <button class="btn-primary btn-secondary" id="backToFormBtn">
-          <i class="fas fa-arrow-left"></i> Edit details
+          <i class="fas fa-arrow-left"></i> Edit
         </button>
         <button class="btn-primary" id="refreshFlowersBtn">
-          <i class="fas fa-sync-alt"></i> More flowers
+          <i class="fas fa-sync-alt"></i> Flowers
         </button>
       </div>
     </div>
   </div>
 
   <div class="footnote">
-    <i class="fas fa-code"></i> ⚡Designed by Kwasi Generous
+    <i class="fas fa-code"></i> Designed by Kwasi Generous
   </div>
 </div>
-.
+
 <script>
   (function() {
     const page1 = document.getElementById('page1');
@@ -568,7 +594,7 @@
     const headerTitle = document.getElementById('headerTitle');
     const subheadText = document.getElementById('subheadText');
 
-    // ----- CANVAS FLOWERS - LIGHTNING FAST -----
+    // ----- CANVAS FLOWERS -----
     const canvas = document.getElementById('flowerCanvas');
     const ctx = canvas.getContext('2d');
     let flowers = [];
@@ -582,9 +608,9 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    const flowerEmojis = ['🌸', '🌺', '🌻', '🌹', '🌷', '🌸', '🌼', '🌸', '💐', '🌸', '🌺', '🌷', '🌻', '🌹'];
+    const flowerEmojis = ['🌸', '🌺', '🌻', '🌹', '🌷', '🌸', '🌼', '💐', '🌺', '🌷', '🌻'];
 
-    function initFlowers(count = 100) {
+    function initFlowers(count = 80) {
       flowers = [];
       const w = canvas.width;
       const h = canvas.height;
@@ -592,7 +618,7 @@
         flowers.push({
           x: Math.random() * w,
           y: Math.random() * h - h * 0.2,
-          size: 20 + Math.random() * 30,
+          size: 18 + Math.random() * 28,
           speedY: 5 + Math.random() * 8,
           speedX: (Math.random() - 0.5) * 3.5,
           rotation: Math.random() * 360,
@@ -615,7 +641,7 @@
           f.y = -60 - Math.random() * 60;
           f.x = Math.random() * w;
           f.speedY = 5 + Math.random() * 8;
-          f.size = 20 + Math.random() * 30;
+          f.size = 18 + Math.random() * 28;
           f.emoji = flowerEmojis[Math.floor(Math.random() * flowerEmojis.length)];
         }
         if (f.x < -60) f.x = w + 40;
@@ -636,7 +662,7 @@
     function startFlowers() {
       if (flowerRunning) return;
       resizeCanvas();
-      initFlowers(100);
+      initFlowers(80);
       flowerRunning = true;
       if (animationId) cancelAnimationFrame(animationId);
       drawFlowers();
@@ -689,20 +715,18 @@
       if (this.value.trim() !== '') universityGroup.classList.remove('error');
     });
 
-    // ----- Get share text -----
+    // ----- Share -----
     function getShareText() {
       const name = fullNameInput.value.trim() || 'Graduate';
       const major = majorInput.value.trim() || 'your field';
       const uni = universityInput.value.trim() || 'your university';
-      return `🎓 I just graduated from ${uni} with a degree in ${major}! 🎉 So proud of this achievement! #Graduation #${uni.replace(/\s/g, '')}`;
+      return `🎓 I just graduated from ${uni} with a degree in ${major}! 🎉 So proud! #Graduation`;
     }
 
     function getShareUrl() {
-      // Use the current page URL, or a custom link
       return window.location.href;
     }
 
-    // ----- SHARE FUNCTIONS -----
     window.shareVia = function(platform) {
       const text = getShareText();
       const url = getShareUrl();
@@ -710,7 +734,7 @@
 
       switch(platform) {
         case 'email':
-          shareUrl = `mailto:?subject=🎓 I Graduated!&body=${encodeURIComponent(text + '\n\nCheck out my celebration: ' + url)}`;
+          shareUrl = `mailto:?subject=🎓 I Graduated!&body=${encodeURIComponent(text + '\n\n' + url)}`;
           break;
         case 'whatsapp':
           shareUrl = `https://wa.me/?text=${encodeURIComponent(text + '\n\n' + url)}`;
@@ -728,7 +752,6 @@
           return;
       }
 
-      // Open in new window
       if (shareUrl) {
         window.open(shareUrl, '_blank', 'width=600,height=500,scrollbars=yes');
       }
@@ -774,10 +797,10 @@
       }
 
       const msgs = [
-        '🎉 Congratulations, grad! You did it! 🎓',
+        '🎉 Proud of you! Celebrate your success! 🎉',
         '🌟 Brilliant! Welcome to the alumni family! 🥳',
         '🚀 The future is yours — congrats! ✨',
-        '🏆 Proud of you! Celebrate your success! 🎈',
+        '🏆 You did it! So proud of you! 🎈',
         '💪 Hard work paid off. Congratulations! 🎊'
       ];
       bigCelebrationMsg.innerHTML = `<i class="fas fa-trophy"></i>  ${msgs[Math.floor(Math.random() * msgs.length)]}  <i class="fas fa-rocket"></i>`;
@@ -799,8 +822,8 @@
         return;
       }
       
-      headerTitle.textContent = 'CONGRATULATIONS';
-      subheadText.innerHTML = `<i class="fas fa-celebration" style="color: #f7971e; margin-right: 8px;"></i> You did it! Welcome to the alumni family! 🎓`;
+      headerTitle.textContent = '🎓 CONGRATULATIONS';
+      subheadText.innerHTML = `<i class="fas fa-heart" style="color: #e74c3c;"></i> You did it! Welcome to the alumni family ❤️`;
       
       updateBigCongrats();
       showPage('page2');
@@ -813,7 +836,7 @@
       stopFlowers();
       showPage('page1');
       headerTitle.textContent = 'Graduate University';
-      subheadText.innerHTML = `<i class="fas fa-celebration" style="color: #f7971e; margin-right: 8px;"></i> Fill your details, then see your congrats with LIGHTNING FAST flowers!`;
+      subheadText.innerHTML = `<i class="fas fa-celebration" style="color: #f7971e; margin-right: 6px;"></i> Fill your details, then celebrate!`;
     }
 
     function refreshFlowers() {

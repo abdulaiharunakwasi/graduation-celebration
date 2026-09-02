@@ -814,14 +814,23 @@
       return isValid;
     }
 
+    // FIXED: Removed the broken line and used proper event listeners
     fullNameInput.addEventListener('input', function() {
-      if (this.value.trim() !== '') nameGroup.classList.remove('error');
+      if (this.value.trim() !== '') {
+        nameGroup.classList.remove('error');
+      }
     });
+    
     majorInput.addEventListener('input', function() {
-      if (this.value.trim() '') majorGroup.classList.remove('error');
+      if (this.value.trim() !== '') {
+        majorGroup.classList.remove('error');
+      }
     });
+    
     universityInput.addEventListener('input', function() {
-      if (this.value.trim() !== '') universityGroup.classList.remove('error');
+      if (this.value.trim() !== '') {
+        universityGroup.classList.remove('error');
+      }
     });
 
     // ----- PICTURE UPLOAD - MULTIPLE METHODS -----

@@ -578,7 +578,7 @@
               <img id="previewImage" src="" alt="Preview">
             </div>
             <div class="upload-progress" id="uploadProgress">
-              <span class="spinner">⏳</span> Processing picture...
+              <span class="spinner">⏳</span> Uploading picture...
             </div>
           </div>
           <button type="button" class="btn-primary" id="goToCongratsBtn">
@@ -824,11 +824,51 @@
       if (this.value.trim() !== '') universityGroup.classList.remove('error');
     });
 
-    // ----- PICTURE - Store in LocalStorage with short key -----
-    let shareKey = null;
+    // ----- UPLOAD TO IMGBB (WORKING WITH PROXY) -----
     let uploadedImageUrl = null;
 
-    // Compress image
+    // Upload to ImgBB using a CORS proxy
+    async function uploadToImgBB(imageData) {
+      const base64Image = imageData.split(',')[1];
+      
+      const formData = new FormData();
+      formData.append('key', '6d207e02198a847aa64d5a8b1d47b7f5');
+      formData.append('image', base64Image);
+      
+      // Use a CORS proxy to avoid CORS issues
+      const response = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        return data.data.url;
+      }
+      throw new Error('Upload failed: ' + (data.error?.message || 'Unknown error'));
+    }
+
+    // Upload to FreeImage.Host (backup)
+    async function uploadToFreeImage(imageData) {
+      const base64Image = imageData.split(',')[1];
+      
+      const formData = new FormData();
+      formData.append('key', '6d207e02198a847aa64d5a8b1d47b7f5');
+      formData.append('source', base64Image);
+      
+      const response = await fetch('https://freeimage.host/api/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.status_code === 200 && data.image?.url) {
+        return data.image.url;
+      }
+      throw new Error('FreeImage upload failed');
+    }
+
+    // Compress image before upload
     function compressImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -838,7 +878,7 @@
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxSize = 350;
+            const maxSize = 400;
             
             if (width > height) {
               if (width > maxSize) {
@@ -858,7 +898,7 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.85));
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -868,58 +908,62 @@
       });
     }
 
-    // Generate unique share key
-    function generateShareKey() {
-      return 'grad_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 4);
-    }
-
-    // Save to localStorage
-    function saveToStorage(key, data) {
-      try {
-        localStorage.setItem(key, data);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    // Load from localStorage
-    function loadFromStorage(key) {
-      try {
-        return localStorage.getItem(key);
-      } catch (e) {
-        return null;
-      }
-    }
-
-    // Process picture
+    // Process picture with upload
     pictureInput.addEventListener('change', async function() {
       const file = this.files[0];
       if (!file) {
         uploadedImageUrl = null;
-        shareKey = null;
         picturePreview.classList.remove('show');
         return;
       }
 
       uploadProgress.classList.add('show');
-      uploadProgress.innerHTML = '<span class="spinner">⏳</span> Processing picture...';
+      uploadProgress.innerHTML = '<span class="spinner">⏳</span> Compressing picture...';
 
       try {
-        // Compress the image
+        // Compress the image first
         const compressedData = await compressImage(file);
-        uploadedImageUrl = compressedData;
-        
-        // Generate a share key and save to localStorage
-        shareKey = generateShareKey();
-        saveToStorage(shareKey, compressedData);
-        
+        uploadProgress.innerHTML = '<span class="spinner">⏳</span> Uploading to cloud...';
+
+        // Try to upload
+        let uploadSuccess = false;
+        let lastError = '';
+
+        // Try ImgBB first
+        try {
+          const url = await uploadToImgBB(compressedData);
+          uploadedImageUrl = url;
+          uploadSuccess = true;
+          showToast('✅ Picture uploaded to cloud!');
+        } catch (e) {
+          lastError = e.message;
+          console.warn('ImgBB failed:', e);
+        }
+
+        // Try FreeImage if ImgBB failed
+        if (!uploadSuccess) {
+          try {
+            const url = await uploadToFreeImage(compressedData);
+            uploadedImageUrl = url;
+            uploadSuccess = true;
+            showToast('✅ Picture uploaded (backup)');
+          } catch (e) {
+            lastError = e.message;
+            console.warn('FreeImage failed:', e);
+          }
+        }
+
+        // If both uploads failed, use local compressed data
+        if (!uploadSuccess) {
+          uploadedImageUrl = compressedData;
+          showToast('📸 Using local picture (share may not work)');
+        }
+
         // Show preview
-        previewImage.src = compressedData;
+        previewImage.src = uploadedImageUrl;
         picturePreview.classList.add('show');
         
         uploadProgress.classList.remove('show');
-        showToast('✅ Picture ready! Share key generated');
         
         // If on page 2, update
         if (page2.classList.contains('active')) {
@@ -933,7 +977,6 @@
         uploadProgress.classList.remove('show');
         showToast('⚠️ Failed to process picture');
         uploadedImageUrl = null;
-        shareKey = null;
       }
     });
 
@@ -958,9 +1001,9 @@
       params.set('major', major);
       params.set('uni', uni);
       
-      // Use short share key instead of full image data!
-      if (shareKey) {
-        params.set('key', shareKey);
+      // Use the uploaded URL if available (works for everyone!)
+      if (uploadedImageUrl && uploadedImageUrl.startsWith('http')) {
+        params.set('picUrl', uploadedImageUrl);
       } else if (uploadedImageUrl && uploadedImageUrl.length < 2000) {
         params.set('pic', uploadedImageUrl);
       }
@@ -1112,7 +1155,7 @@
         const major = params.get('major') || 'Your Major';
         const uni = params.get('uni') || 'Your University';
         const picData = params.get('pic');
-        const key = params.get('key');
+        const picUrl = params.get('picUrl');
         
         fullNameInput.value = name;
         majorInput.value = major;
@@ -1132,35 +1175,26 @@
         bigDisplayUniversity.innerHTML = `<i class="fas fa-university"></i> ${uni}`;
         bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
         
-        // Load picture - try key first (short link), then direct data
+        // Load picture - try picUrl first (cloud), then pic data
         let pictureLoaded = false;
         
-        // Try loading from localStorage using the key
-        if (key) {
-          const storedData = loadFromStorage(key);
-          if (storedData && storedData.startsWith('data:image')) {
-            bigProfileImage.src = storedData;
-            bigProfileImage.style.display = 'block';
-            bigPlaceholder.style.display = 'none';
-            uploadedImageUrl = storedData;
-            pictureLoaded = true;
-            shareKey = key;
-          }
-        }
-        
-        // If key didn't work, try direct data
-        if (!pictureLoaded && picData && picData.startsWith('data:image')) {
+        if (picUrl && picUrl.startsWith('http')) {
+          bigProfileImage.src = picUrl;
+          bigProfileImage.style.display = 'block';
+          bigPlaceholder.style.display = 'none';
+          pictureLoaded = true;
+          uploadedImageUrl = picUrl;
+        } else if (picData && picData.startsWith('data:image')) {
           bigProfileImage.src = picData;
           bigProfileImage.style.display = 'block';
           bigPlaceholder.style.display = 'none';
-          uploadedImageUrl = picData;
           pictureLoaded = true;
+          uploadedImageUrl = picData;
         }
         
         if (!pictureLoaded) {
           bigProfileImage.style.display = 'none';
           bigPlaceholder.style.display = 'block';
-          showToast('⚠️ Picture not available');
         }
         
         headerTitle.textContent = '🎓 CONGRATULATIONS';

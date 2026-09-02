@@ -824,11 +824,12 @@
       if (this.value.trim() !== '') universityGroup.classList.remove('error');
     });
 
-    // ----- PICTURE - DIRECT DATA URL (NO API NEEDED) -----
+    // ----- PICTURE - Store in LocalStorage with short key -----
+    let shareKey = null;
     let uploadedImageUrl = null;
 
-    // Compress image to fit in URL (300px, good quality)
-    function compressForShare(file) {
+    // Compress image
+    function compressImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -837,7 +838,7 @@
             const canvas = document.createElement('canvas');
             let width = img.width;
             let height = img.height;
-            const maxSize = 300; // Good balance: clear enough, small enough for URL
+            const maxSize = 350;
             
             if (width > height) {
               if (width > maxSize) {
@@ -857,8 +858,7 @@
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, width, height);
-            // 80% quality - good balance
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            resolve(canvas.toDataURL('image/jpeg', 0.85));
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -868,11 +868,36 @@
       });
     }
 
+    // Generate unique share key
+    function generateShareKey() {
+      return 'grad_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 4);
+    }
+
+    // Save to localStorage
+    function saveToStorage(key, data) {
+      try {
+        localStorage.setItem(key, data);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Load from localStorage
+    function loadFromStorage(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return null;
+      }
+    }
+
     // Process picture
     pictureInput.addEventListener('change', async function() {
       const file = this.files[0];
       if (!file) {
         uploadedImageUrl = null;
+        shareKey = null;
         picturePreview.classList.remove('show');
         return;
       }
@@ -882,15 +907,19 @@
 
       try {
         // Compress the image
-        const compressedData = await compressForShare(file);
+        const compressedData = await compressImage(file);
         uploadedImageUrl = compressedData;
+        
+        // Generate a share key and save to localStorage
+        shareKey = generateShareKey();
+        saveToStorage(shareKey, compressedData);
         
         // Show preview
         previewImage.src = compressedData;
         picturePreview.classList.add('show');
         
         uploadProgress.classList.remove('show');
-        showToast('✅ Picture ready!');
+        showToast('✅ Picture ready! Share key generated');
         
         // If on page 2, update
         if (page2.classList.contains('active')) {
@@ -904,6 +933,7 @@
         uploadProgress.classList.remove('show');
         showToast('⚠️ Failed to process picture');
         uploadedImageUrl = null;
+        shareKey = null;
       }
     });
 
@@ -928,8 +958,10 @@
       params.set('major', major);
       params.set('uni', uni);
       
-      // Embed the image data directly in the URL (ALWAYS WORKS!)
-      if (uploadedImageUrl) {
+      // Use short share key instead of full image data!
+      if (shareKey) {
+        params.set('key', shareKey);
+      } else if (uploadedImageUrl && uploadedImageUrl.length < 2000) {
         params.set('pic', uploadedImageUrl);
       }
       
@@ -1080,6 +1112,7 @@
         const major = params.get('major') || 'Your Major';
         const uni = params.get('uni') || 'Your University';
         const picData = params.get('pic');
+        const key = params.get('key');
         
         fullNameInput.value = name;
         majorInput.value = major;
@@ -1099,15 +1132,35 @@
         bigDisplayUniversity.innerHTML = `<i class="fas fa-university"></i> ${uni}`;
         bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
         
-        // Load picture from the URL - WORKS 100% OF THE TIME!
-        if (picData && picData.startsWith('data:image')) {
+        // Load picture - try key first (short link), then direct data
+        let pictureLoaded = false;
+        
+        // Try loading from localStorage using the key
+        if (key) {
+          const storedData = loadFromStorage(key);
+          if (storedData && storedData.startsWith('data:image')) {
+            bigProfileImage.src = storedData;
+            bigProfileImage.style.display = 'block';
+            bigPlaceholder.style.display = 'none';
+            uploadedImageUrl = storedData;
+            pictureLoaded = true;
+            shareKey = key;
+          }
+        }
+        
+        // If key didn't work, try direct data
+        if (!pictureLoaded && picData && picData.startsWith('data:image')) {
           bigProfileImage.src = picData;
           bigProfileImage.style.display = 'block';
           bigPlaceholder.style.display = 'none';
           uploadedImageUrl = picData;
-        } else {
+          pictureLoaded = true;
+        }
+        
+        if (!pictureLoaded) {
           bigProfileImage.style.display = 'none';
           bigPlaceholder.style.display = 'block';
+          showToast('⚠️ Picture not available');
         }
         
         headerTitle.textContent = '🎓 CONGRATULATIONS';

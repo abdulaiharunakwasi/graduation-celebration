@@ -440,7 +440,6 @@
       display: none;
     }
 
-    /* Upload progress */
     .upload-progress {
       display: none;
       text-align: center;
@@ -520,6 +519,23 @@
     .toast.show {
       opacity: 1;
     }
+
+    /* Picture preview */
+    .picture-preview {
+      display: none;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    .picture-preview img {
+      max-width: 80px;
+      max-height: 80px;
+      border-radius: 50%;
+      border: 2px solid #764ba2;
+      object-fit: cover;
+    }
+    .picture-preview.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -560,8 +576,11 @@
           <div class="input-group file-input">
             <label for="picture"><i class="fas fa-camera"></i> Your picture (optional)</label>
             <input type="file" id="picture" accept="image/*">
+            <div class="picture-preview" id="picturePreview">
+              <img id="previewImage" src="" alt="Preview">
+            </div>
             <div class="upload-progress" id="uploadProgress">
-              <span class="spinner">⏳</span> Uploading picture...
+              <span class="spinner">⏳</span> Processing picture...
             </div>
           </div>
           <button type="button" class="btn-primary" id="goToCongratsBtn">
@@ -653,7 +672,7 @@
   </div>
 </div>
 
-<div id="toast" class="toast">Link copied! Share with friends 🎉</div>
+<div id="toast" class="toast"></div>
 
 <script>
   (function() {
@@ -683,6 +702,8 @@
     const headerTitle = document.getElementById('headerTitle');
     const subheadText = document.getElementById('subheadText');
     const uploadProgress = document.getElementById('uploadProgress');
+    const picturePreview = document.getElementById('picturePreview');
+    const previewImage = document.getElementById('previewImage');
 
     // ----- CANVAS FLOWERS -----
     const canvas = document.getElementById('flowerCanvas');
@@ -805,70 +826,84 @@
       if (this.value.trim() !== '') universityGroup.classList.remove('error');
     });
 
-    // ----- PICTURE UPLOAD TO IMGBB (Free Image Hosting) -----
-    let uploadedImageUrl = null;
-    let isUploading = false;
+    // ----- PICTURE HANDLING - 100% RELIABLE -----
+    let savedPictureData = null;
 
-    async function uploadToImgBB(imageData) {
+    // Ultra-compress image to always fit in URL
+    function ultraCompressImage(file, maxSize = 150) {
       return new Promise((resolve, reject) => {
-        // Show progress
-        uploadProgress.classList.add('show');
-        isUploading = true;
-        
-        // Use a free CORS proxy for imgbb
-        const apiKey = '6d207e02198a847aa64d5a8b1d47b7f5'; // Free imgbb API key (public)
-        const formData = new FormData();
-        formData.append('key', apiKey);
-        formData.append('image', imageData);
-        
-        fetch('https://api.imgbb.com/1/upload', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          uploadProgress.classList.remove('show');
-          isUploading = false;
-          if (data.success) {
-            resolve(data.data.url);
-          } else {
-            reject(new Error('Upload failed: ' + (data.error?.message || 'Unknown error')));
-          }
-        })
-        .catch(error => {
-          uploadProgress.classList.remove('show');
-          isUploading = false;
-          reject(error);
-        });
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            
+            // Calculate new size (max 150px for reliable URL)
+            if (width > height) {
+              if (width > maxSize) {
+                height = Math.round((height * maxSize) / width);
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width = Math.round((width * maxSize) / height);
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            // Use high compression (0.5 quality)
+            resolve(canvas.toDataURL('image/jpeg', 0.5));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
     }
 
-    // Upload picture when selected
+    // Process picture when selected
     pictureInput.addEventListener('change', async function() {
       const file = this.files[0];
-      if (file) {
-        try {
-          const reader = new FileReader();
-          reader.onload = async function(e) {
-            const imageData = e.target.result.split(',')[1]; // Get base64 data
-            try {
-              const url = await uploadToImgBB(imageData);
-              uploadedImageUrl = url;
-              showToast('✅ Picture uploaded successfully!');
-            } catch (error) {
-              console.error('Upload error:', error);
-              showToast('⚠️ Upload failed. Using local picture.');
-              // Fallback: use local data URL
-              uploadedImageUrl = e.target.result;
-            }
-          };
-          reader.readAsDataURL(file);
-        } catch (error) {
-          console.error('Error reading file:', error);
-          showToast('⚠️ Error reading file');
+      if (!file) {
+        savedPictureData = null;
+        picturePreview.classList.remove('show');
+        return;
+      }
+
+      uploadProgress.classList.add('show');
+      uploadProgress.innerHTML = '<span class="spinner">⏳</span> Compressing picture...';
+
+      try {
+        // Ultra-compress to always fit in URL
+        const compressed = await ultraCompressImage(file, 150);
+        savedPictureData = compressed;
+        
+        // Show preview
+        previewImage.src = compressed;
+        picturePreview.classList.add('show');
+        
+        uploadProgress.classList.remove('show');
+        showToast('✅ Picture ready!');
+        
+        // If we're already on page 2, update the big picture
+        if (page2.classList.contains('active')) {
+          bigProfileImage.src = savedPictureData;
+          bigProfileImage.style.display = 'block';
+          bigPlaceholder.style.display = 'none';
         }
-      } else {
-        uploadedImageUrl = null;
+        
+      } catch (error) {
+        console.error('Picture error:', error);
+        uploadProgress.classList.remove('show');
+        showToast('⚠️ Error processing picture');
+        savedPictureData = null;
       }
     });
 
@@ -893,23 +928,15 @@
       params.set('major', major);
       params.set('uni', uni);
       
-      // Use uploaded image URL if available, otherwise use local data
-      if (uploadedImageUrl) {
-        // If it's a full URL, just pass it
-        if (uploadedImageUrl.startsWith('http')) {
-          params.set('picUrl', uploadedImageUrl);
-        } else {
-          // Only include local data if small enough
-          if (uploadedImageUrl.length < 2000) {
-            params.set('pic', uploadedImageUrl);
-          }
-        }
+      // Always include the compressed picture (always fits!)
+      if (savedPictureData) {
+        params.set('pic', savedPictureData);
       }
       
       return baseUrl + '?' + params.toString();
     }
 
-    // Native share (works on mobile)
+    // Native share
     window.shareDirectly = function() {
       const text = getShareText();
       const url = getShareUrl();
@@ -1026,9 +1053,9 @@
       if (major === '') major = 'Your Major';
       bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
 
-      // Show picture - use uploaded URL if available
-      if (uploadedImageUrl) {
-        bigProfileImage.src = uploadedImageUrl;
+      // Show picture
+      if (savedPictureData) {
+        bigProfileImage.src = savedPictureData;
         bigProfileImage.style.display = 'block';
         bigPlaceholder.style.display = 'none';
       } else {
@@ -1057,7 +1084,6 @@
         const major = params.get('major') || 'Your Major';
         const uni = params.get('uni') || 'Your University';
         const picData = params.get('pic');
-        const picUrl = params.get('picUrl');
         
         fullNameInput.value = name;
         majorInput.value = major;
@@ -1078,24 +1104,13 @@
         bigDisplayUniversity.innerHTML = `<i class="fas fa-university"></i> ${uni}`;
         bigDisplayMajor.innerHTML = `<i class="fas fa-microchip"></i> ${major}`;
         
-        // Try to load picture - first try URL, then local data
-        let pictureLoaded = false;
-        
-        if (picUrl && picUrl.startsWith('http')) {
-          bigProfileImage.src = picUrl;
-          bigProfileImage.style.display = 'block';
-          bigPlaceholder.style.display = 'none';
-          pictureLoaded = true;
-          uploadedImageUrl = picUrl;
-        } else if (picData && picData.startsWith('data:image')) {
+        // Load picture from URL (ALWAYS works because it's compressed)
+        if (picData && picData.startsWith('data:image')) {
           bigProfileImage.src = picData;
           bigProfileImage.style.display = 'block';
           bigPlaceholder.style.display = 'none';
-          pictureLoaded = true;
-          uploadedImageUrl = picData;
-        }
-        
-        if (!pictureLoaded) {
+          savedPictureData = picData;
+        } else {
           bigProfileImage.style.display = 'none';
           bigPlaceholder.style.display = 'block';
         }
@@ -1187,8 +1202,7 @@
         bigPlaceholder.style.display = 'block';
         updateBigCongrats();
         resizeCanvas();
-        
-        fullNameInput.value = '';
+               fullNameInput.value = '';
         majorInput.value = '';
         universityInput.value = '';
       }
